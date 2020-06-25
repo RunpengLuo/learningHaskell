@@ -106,12 +106,12 @@ partition' f list = (filter f list,filter (not.f) list)
 find' :: (a -> Bool) -> [a] -> Maybe a
 find' f xs
   | null xs   = Nothing
-  | otherwise = Just (head $ filter f xs)
+  | otherwise = Just $ head $ filter f xs
 
 
 -- | elemIndex
 elemIndex' :: (Eq a) => a -> [a] -> Maybe Int
-elemIndex' x xs = Just (length $ takeWhile (x /=) xs)
+elemIndex' x xs = Just $ length $ takeWhile (x /=) xs
 
 
 -- | elemIndices
@@ -120,4 +120,112 @@ elemIndices' needle list = foldr (\(x,i) acc -> if x == needle then i:acc else a
     where
         indlists = zip list [0..pred $ length list]
 
+
+-- | findIndex
+findIndex' :: (a -> Bool) -> [a] -> Maybe Int
+findIndex' f xs = case ziplist of
+    []  -> Nothing
+    x:_ -> Just $ snd x 
+    where
+        ziplist = filter (\(x,_) -> f x) $ zip xs inds 
+        inds = [0..pred $ length xs]
+
+
+-- | findIndices
+findIndices' :: (a -> Bool) -> [a] -> [Int]
+findIndices' f xs = snd $ unzip $ filter (\(x,_) -> f x) $ zip xs inds
+    where 
+        inds = [0..pred $ length xs] 
+
+
+-- | lines 
+-- 
+-- >>> lines "first line\nsecond line\nthird line"
+-- ["first line","second line","third line"]
+
+
+-- | unlines
+-- 
+-- >>> unlines ["first line", "second line", "third line"]
+-- "first line\nsecond line\nthird line\n"
+unlines' :: [String] -> String
+unlines' = foldr (\x acc -> x ++ "\n" ++ acc) ""
+
+
+-- | words
+-- 
+-- >>> words "hey these are the words in this sentence"  
+-- ["hey","these","are","the","words","in","this","sentence"] 
+
+
+-- | unwords
+-- 
+-- >>> unwords ["hey","there","mate"] 
+-- "hey there mate"
+unwords' :: [String] -> String
+unwords' = foldr (\x acc -> x ++ " " ++ acc) ""
+
+
+-- | nub
+-- 
+-- >>> nub [1,2,3,4,3,2,1,2,3,4,3,2,1]
+-- [1,2,3,4]
+nub' :: Eq a => [a] -> [a]
+nub' = foldl (\acc x -> x:delete' x acc) []
+
+
+-- | delete
+delete' :: Eq a => a -> [a] -> [a]
+delete' i = filter (/= i)
+
+
+-- | (\\)
+(\\\) :: Eq a => [a] -> [a] -> [a]
+(\\\) ori del = case del of
+    []   -> ori
+    x:xs -> (\\\) (delete' x ori) xs
+
+
+-- | union 
+union' :: Eq a => [a] -> [a] -> [a]
+union' a b = case b of 
+    [] -> a
+    x:xs | null $ filter (x==) a -> union' a xs ++ [x]
+         | otherwise -> union' a xs 
+
+
+-- | intersect
+intersect' :: Eq a => [a] -> [a] -> [a]
+intersect' a b = case b of
+    [] -> []
+    x:xs | null $ filter (x ==) a -> intersect' a xs
+         | otherwise -> x : intersect' a xs
+
+
+-- Polymorphism functions:
+-- genericLength
+-- genericTake
+-- genericDrop
+-- genericSplitAt
+-- genericIndex
+-- genericReplicate
+
+-- Generic functions:
+-- nubBy
+-- deleteBy
+-- unionBy
+-- intersectBy
+-- groupBy
+--
+-- >>> let values = [-4.3, -2.4, -1.2, 0.4, 2.3, 5.9, 10.5, 29.1, 5.3, -2.4, -14.5, 2.9, 2.3] 
+-- >>> groupBy (\x y -> (x > 0) == (y > 0)) values
+-- [[-4.3,-2.4,-1.2],[0.4,2.3,5.9,10.5,29.1,5.3],[-2.4,-14.5],[2.9,2.3]] 
+
+
+-- | on
+-- 
+-- >>> ((==) `on` (> 0)) 3 (-2)
+-- False
+on :: (b -> b -> c) -> (a -> b) -> a -> a -> c
+f `on` g = \x y -> f (g x) (g y)
 
