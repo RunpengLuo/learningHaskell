@@ -110,3 +110,23 @@ quickSort'' (x:xs) =
     let smallerSorted = quickSort'' (filter (<=x) xs)
         biggerSorted  = quickSort'' (filter (>x) xs)
     in smallerSorted ++ [x] ++ biggerSorted
+
+
+mergeSort :: Ord a => [a] -> [a]
+mergeSort list = 
+    if 
+        (length list <= 1) 
+    then 
+        list 
+    else 
+        merge (mergeSort left) (mergeSort right)
+    where
+        half  = (length list) `div` 2
+        left = take half list
+        right = drop half list
+        merge :: Ord a => [a] -> [a] -> [a]
+        merge l r = case (l,r) of
+            ([],_) -> r
+            (_,[]) -> l
+            (x:xs,y:ys) | x <= y    -> x : merge xs (y:ys)
+                        | otherwise -> y : merge (x:xs) ys
